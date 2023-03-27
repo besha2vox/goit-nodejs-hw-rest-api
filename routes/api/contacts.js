@@ -4,11 +4,19 @@ const contacts = require('../../models/contacts');
 
 const router = express.Router();
 
-const contactShema = Joi.object({
+const addContactShema = Joi.object({
     name: Joi.string().required(),
     phone: Joi.string().required(),
     email: Joi.string().required(),
 });
+
+const updateContactShema = Joi.object({
+    name: Joi.string(),
+    phone: Joi.string(),
+    email: Joi.string(),
+})
+    .or('name', 'phone', 'email')
+    .unknown(false);
 
 router.get('/', async (req, res, next) => {
     try {
@@ -45,7 +53,7 @@ router.get('/:contactId', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
     try {
-        const { error } = contactShema.validate(req.body);
+        const { error } = addContactShema.validate(req.body);
 
         if (error) {
             res.status(400).json({ message: 'missing fields' });
@@ -61,7 +69,7 @@ router.post('/', async (req, res, next) => {
             return;
         }
 
-        res.status(200).json({
+        res.status(201).json({
             status: 'success',
             code: 201,
             data: result,
@@ -94,9 +102,20 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.put('/:contactId', async (req, res, next) => {
     try {
-        const { error } = contactShema.validate(req.body);
+        const { error } = updateContactShema.validate(req.body);
         if (error) {
-            res.status(400).json({ message: 'missing fields' });
+            const { path, message } = error.details[0];
+            console.log(error.details[0]);
+            if (!path.length) {
+                res.status(400).json({
+                    message: 'missing fields',
+                });
+                return;
+            }
+
+            res.status(400).json({
+                message: message,
+            });
             return;
         }
 
@@ -105,7 +124,6 @@ router.put('/:contactId', async (req, res, next) => {
         res.status(200).json({
             status: 'success',
             code: 200,
-            message: 'contact deleted',
             data: result,
         });
     } catch (error) {
