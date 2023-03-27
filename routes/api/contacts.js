@@ -102,25 +102,19 @@ router.delete('/:contactId', async (req, res, next) => {
 
 router.put('/:contactId', async (req, res, next) => {
     try {
-        const { error } = updateContactShema.validate(req.body);
-        if (error) {
-            const { path, message } = error.details[0];
-            console.log(error.details[0]);
-            if (!path.length) {
-                res.status(400).json({
-                    message: 'missing fields',
-                });
-                return;
-            }
+        const { error, value } = updateContactShema.validate(req.body, {
+            stripUnknown: true,
+        });
 
+        if (error) {
             res.status(400).json({
-                message: message,
+                message: 'missing fields',
             });
             return;
         }
 
         const { contactId } = req.params;
-        const result = await contacts.updateContact(contactId, req.body);
+        const result = await contacts.updateContact(contactId, value);
         res.status(200).json({
             status: 'success',
             code: 200,
