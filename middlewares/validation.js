@@ -15,6 +15,43 @@ const schema = {
         .unknown(false),
 };
 
+const getErrorMessage = (error, method) => {
+    const errorTypes = error.details.map(({ type }) => type);
+    const isEmailInvalid = errorTypes.some((type) => type === 'string.email');
+    const isMissingFields = errorTypes.some((type) => type === 'any.required');
+    const isStringBaseError = errorTypes.some((type) => type === 'string.base');
+    const missingFields = error.details.reduce((acc, { type, context }) => {
+        if (type === 'any.required') {
+            acc.push(context.key);
+        }
+        return acc;
+    }, []);
+
+    if (isMissingFields) {
+        switch (method) {
+            case 'add':
+                return missingFields.length > 1
+                    ? `missing required fields: ${missingFields.join(', ')}`
+                    : `missing required ${missingFields[0]} field`;
+
+            case 'update':
+                return 'missing fields';
+
+            default:
+                break;
+        }
+    }
+
+    if (isEmailInvalid) return 'email is invalid';
+
+    if (isStringBaseError) {
+        const { message } = error.details.find(
+            ({ type }) => type === 'string.base'
+        );
+        return message;
+    }
+};
+
 const addValidation = (req, res, next) => {
     const { error, value } = schema.add.validate(req.body, {
         stripUnknown: true,
@@ -22,15 +59,8 @@ const addValidation = (req, res, next) => {
     });
 
     if (error) {
-        const missingFields = error.details.map(({ context }) => context.key);
-        const message =
-            missingFields.length > 1
-                ? `missing required fields: ${missingFields.join(', ')}`
-                : `missing required ${missingFields[0]} field`;
-
-        res.status(400).json({
-            message,
-        });
+        const message = getErrorMessage(error, 'add');
+        res.status(400).json({ message });
         return;
     }
     req.data = value;
@@ -43,9 +73,8 @@ const updateValidation = (req, res, next) => {
     });
 
     if (error) {
-        res.status(400).json({
-            message: 'missing fields',
-        });
+        const message = getErrorMessage(error, 'update');
+        res.status(400).json({ message });
         return;
     }
     req.data = value;
