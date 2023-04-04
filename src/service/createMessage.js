@@ -22,8 +22,11 @@ const createMessage = (error, method) => {
             case 'put':
                 return 'missing fields';
 
+            case 'patch':
+                return 'missing field favorite';
+
             default:
-                break;
+                return 'Bad request';
         }
     }
 
