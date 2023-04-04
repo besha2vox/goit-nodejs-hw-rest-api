@@ -1,7 +1,9 @@
 const createMessage = (error, method) => {
     const errorTypes = error.details.map(({ type }) => type);
     const isEmailInvalid = errorTypes.some((type) => type === 'string.email');
-    const isMissingFields = errorTypes.some((type) => type === 'any.required');
+    const isMissingFields = errorTypes.some(
+        (type) => type === 'any.required' || type === 'object.missing'
+    );
     const isStringBaseError = errorTypes.some((type) => type === 'string.base');
     const missingFields = error.details.reduce((acc, { type, context }) => {
         if (type === 'any.required') {

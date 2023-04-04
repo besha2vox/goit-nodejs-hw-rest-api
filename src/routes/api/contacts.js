@@ -6,7 +6,7 @@ const {
     remove,
     update,
 } = require('../../controllers/contacts.js');
-const { validateContact } = require('../../middlewares/validateContact.js');
+const { validateContact } = require('../../middlewares');
 const { contactSchemas } = require('../../schemas');
 
 const router = express.Router();

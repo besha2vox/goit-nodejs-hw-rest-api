@@ -1,4 +1,5 @@
 const { createMessage } = require('../helpers');
+const { HttpError } = require('../helpers');
 
 const validateContact = (schema) => (req, res, next) => {
     const { methods } = req.route;
@@ -10,7 +11,8 @@ const validateContact = (schema) => (req, res, next) => {
 
     if (error) {
         const message = createMessage(error, method);
-        res.status(400).json({ message });
+        console.log(message);
+        next(HttpError(400, message));
     }
     req.data = value;
     next();
