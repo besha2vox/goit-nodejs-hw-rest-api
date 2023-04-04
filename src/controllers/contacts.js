@@ -4,12 +4,12 @@ const {
     addContact,
     updateContact,
     removeContact,
-} = require('../models/contacts.js');
+} = require('../models/contacts');
 
 const getAll = async (req, res, next) => {
     try {
         const result = await listContacts();
-        res.status(200).json(result);
+        res.status(200).json({ result });
     } catch (error) {
         next(error);
     }

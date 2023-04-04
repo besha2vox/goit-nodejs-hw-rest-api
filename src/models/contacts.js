@@ -2,7 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const uuid = require('uuid');
 
-const contactsPath = path.resolve('models', 'contacts.json');
+const contactsPath = path.join(__dirname, 'contacts.json');
 const stringify = (data) => JSON.stringify(data, null, 2);
 
 const listContacts = async () => {
