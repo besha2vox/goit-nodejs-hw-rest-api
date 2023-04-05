@@ -13,6 +13,7 @@ const getById = async (req, res, next) => {
 
     if (!result) {
         next(HttpError(404));
+        return;
     }
     res.status(200).json(result);
 };
@@ -30,6 +31,7 @@ const remove = async (req, res, next) => {
     console.log(result);
     if (!result) {
         next(HttpError(404));
+        return;
     }
 
     res.status(200).json({ message: 'contact deleted' });
@@ -42,6 +44,7 @@ const update = async (req, res, next) => {
 
     if (!result) {
         next(HttpError(404));
+        return;
     }
 
     res.status(200).json(result);
@@ -51,12 +54,18 @@ const updateStatus = async (req, res, next) => {
     const { contactId } = req.params;
     const { favorite } = req.body;
 
+    if (!favorite) {
+        next(HttpError(400, 'missing field favorite'));
+        return;
+    }
+
     const result = await contactModels.updateContactStatus(contactId, {
         favorite,
     });
 
     if (!result) {
         next(HttpError(404));
+        return;
     }
 
     res.status(200).json(result);
