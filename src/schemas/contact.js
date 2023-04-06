@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
 const { handleMongooseError } = require('../helpers');
-console.log(handleMongooseError);
+
 const Schema = mongoose.Schema;
 
 const contact = new Schema(
