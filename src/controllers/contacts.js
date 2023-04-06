@@ -1,15 +1,15 @@
-const { contactModels } = require('../db');
 const { HttpError, ctrlWrapper } = require('../helpers');
+const { Contact } = require('../schemas');
 
 const getAll = async (req, res, next) => {
-    const result = await contactModels.listContacts();
-    res.status(200).json({ result });
+    const result = await Contact.find();
+    res.status(200).json(result);
 };
 
 const getById = async (req, res, next) => {
     const { contactId } = req.params;
 
-    const result = await contactModels.getContactById(contactId);
+    const result = await Contact.findById(contactId);
 
     if (!result) {
         next(HttpError(404));
@@ -19,7 +19,7 @@ const getById = async (req, res, next) => {
 };
 
 const add = async (req, res, next) => {
-    const result = await contactModels.addContact(req.data);
+    const result = await Contact.create(req.data);
 
     res.status(201).json(result);
 };
@@ -27,8 +27,7 @@ const add = async (req, res, next) => {
 const remove = async (req, res, next) => {
     const { contactId } = req.params;
 
-    const result = await contactModels.removeContact(contactId);
-    console.log(result);
+    const result = await Contact.findByIdAndDelete(contactId);
     if (!result) {
         next(HttpError(404));
         return;
@@ -40,7 +39,9 @@ const remove = async (req, res, next) => {
 const update = async (req, res, next) => {
     const { contactId } = req.params;
 
-    const result = await contactModels.updateContact(contactId, req.data);
+    const result = await Contact.findByIdAndUpdate(contactId, req.data, {
+        returnDocument: 'after',
+    });
 
     if (!result) {
         next(HttpError(404));
@@ -52,16 +53,14 @@ const update = async (req, res, next) => {
 
 const updateStatus = async (req, res, next) => {
     const { contactId } = req.params;
-    const { favorite } = req.body;
+    const { favorite } = req.data;
+    console.log('favorite', favorite);
 
-    if (!favorite) {
-        next(HttpError(400, 'missing field favorite'));
-        return;
-    }
-
-    const result = await contactModels.updateContactStatus(contactId, {
-        favorite,
-    });
+    const result = await Contact.findByIdAndUpdate(
+        contactId,
+        { favorite },
+        { returnDocument: 'after' }
+    );
 
     if (!result) {
         next(HttpError(404));
