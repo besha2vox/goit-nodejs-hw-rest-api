@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
-const { handleMongooseError, validateUniq } = require('../services');
+const { handleMongooseError } = require('../services');
 
 const Schema = mongoose.Schema;
 
@@ -9,7 +9,6 @@ const contact = new Schema(
         name: {
             type: String,
             required: [true, 'Set name for contact'],
-            unique: true,
         },
         email: {
             type: String,
@@ -31,12 +30,6 @@ const contact = new Schema(
 );
 
 contact.post('save', handleMongooseError);
-// contact.pre('save', async function (next) {
-//     await validateUniq(next, this, Contact);
-// });
-contact.pre('save', async function (next) {
-    await validateUniq(next, this);
-});
 
 const add = Joi.object({
     name: Joi.string().required().messages({

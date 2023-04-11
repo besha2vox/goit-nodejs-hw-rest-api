@@ -1,12 +1,12 @@
 const { Contact } = require('../schemas');
+const { HttpError } = require('../helpers');
 
 const validateUniqueName = async (req, res, next) => {
-    console.log('Contact in validateUniq: ', Contact);
+    const { contactId } = req.params;
     const existingContact = await Contact.findOne({ name: req.body.name });
-    if (existingContact) {
-        const err = new Error('Name must be unique');
-        err.status = 400;
-        return next(err);
+
+    if (existingContact && existingContact._id.toString() === contactId) {
+        return next(HttpError(400, 'Name must be unique'));
     }
     next();
 };

@@ -4,7 +4,6 @@ const {
     validateJoi,
     validateId,
     authMiddleware,
-    accessCheck,
     validateUniqueName,
 } = require('../../middlewares');
 const { contactSchema } = require('../../schemas');
@@ -15,22 +14,21 @@ const router = express.Router();
 
 router.get('/', authMiddleware, getAll);
 
-router.get('/:contactId', authMiddleware, accessCheck, validateId, getById);
+router.get('/:contactId', authMiddleware, validateId, getById);
 
 router.post(
     '/',
     authMiddleware,
-    // validateUniqueName,
+    validateUniqueName,
     validateJoi(contactSchema.add),
     add
 );
 
-router.delete('/:contactId', authMiddleware, accessCheck, validateId, remove);
+router.delete('/:contactId', authMiddleware, validateId, remove);
 
 router.put(
     '/:contactId',
     authMiddleware,
-    accessCheck,
     validateId,
     validateUniqueName,
     validateJoi(contactSchema.update),
@@ -40,7 +38,6 @@ router.put(
 router.patch(
     '/:contactId/favorite',
     authMiddleware,
-    accessCheck,
     validateId,
     validateJoi(contactSchema.updateStatus),
     updateStatus

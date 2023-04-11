@@ -7,7 +7,7 @@ const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../schemas');
 
 const singup = async (req, res, next) => {
-    const { name, email, password } = req.body;
+    const { subscription, email, password } = req.body;
     const user = await User.findOne({ email });
 
     if (user) {
@@ -16,13 +16,13 @@ const singup = async (req, res, next) => {
     }
 
     const newUser = new User({
-        name,
         email,
         password,
+        subscription,
     });
     await newUser.save();
-    delete newUser.password;
-    res.status(201).json(newUser);
+
+    res.status(201).json({ email, subscription });
 };
 
 const singin = async (req, res, next) => {
@@ -42,11 +42,40 @@ const singin = async (req, res, next) => {
     }
 
     const token = jwt.sign({ _id: user._id }, JWT_SECRET);
+    const { subscription } = user;
 
-    res.status(201).json({ user, token });
+    res.status(201).json({ token, user: { email, subscription } });
+};
+
+const logout = async (req, res, next) => {
+    const { _id } = req.user;
+
+    const user = await User.findById(_id);
+
+    if (!user) {
+        next(HttpError(401));
+    }
+
+    res.status(204);
+};
+
+const current = async (req, res, next) => {
+    const { _id } = req.user;
+
+    const user = await User.findById(_id);
+
+    if (!user) {
+        next(HttpError(401));
+    }
+
+    const { email, subscription } = user;
+
+    res.status(200).json({ email, subscription });
 };
 
 module.exports = {
     singup: ctrlWrapper(singup),
     singin: ctrlWrapper(singin),
+    logout: ctrlWrapper(logout),
+    current: ctrlWrapper(current),
 };
