@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Joi = require('joi');
-const { handleMongooseError } = require('../helpers');
+const { handleMongooseError, validateUniq } = require('../services');
 
 const Schema = mongoose.Schema;
 
@@ -13,6 +13,7 @@ const contact = new Schema(
         },
         email: {
             type: String,
+            required: [true, 'Set name for contact'],
         },
         phone: {
             type: String,
@@ -21,17 +22,32 @@ const contact = new Schema(
             type: Boolean,
             default: false,
         },
+        owner: {
+            type: Schema.Types.ObjectId,
+            ref: 'user',
+        },
     },
     { versionKey: false }
 );
 
 contact.post('save', handleMongooseError);
+// contact.pre('save', async function (next) {
+//     await validateUniq(next, this, Contact);
+// });
+contact.pre('save', async function (next) {
+    await validateUniq(next, this);
+});
 
 const add = Joi.object({
-    name: Joi.string().required(),
-    phone: Joi.string().required(),
-    email: Joi.string().email().required(),
-    favorite: Joi.boolean(),
+    name: Joi.string().required().messages({
+        'any.required': 'Set name for contact',
+    }),
+    phone: Joi.string(),
+    email: Joi.string().email().required().messages({
+        'any.required': 'Email is required',
+        'string.email': 'Invalid email format',
+    }),
+    favorite: Joi.boolean().default(false),
 }).unknown(false);
 
 const update = Joi.object({
@@ -46,11 +62,12 @@ const updateStatus = Joi.object({
     favorite: Joi.boolean().required(),
 }).unknown(false);
 
-const Contact = mongoose.model('contact', contact);
 const contactSchema = {
     add,
     update,
     updateStatus,
 };
+
+const Contact = mongoose.model('contact', contact);
 
 module.exports = { Contact, contactSchema };

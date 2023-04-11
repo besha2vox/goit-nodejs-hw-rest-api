@@ -1,7 +1,7 @@
 const { createMessage } = require('../helpers');
 const { HttpError } = require('../helpers');
 
-const validateContact = (schema) => (req, res, next) => {
+const validateJoi = (schema) => (req, res, next) => {
     const { methods } = req.route;
     const [method] = Object.keys(methods);
 
@@ -18,4 +18,4 @@ const validateContact = (schema) => (req, res, next) => {
     next();
 };
 
-module.exports = validateContact;
+module.exports = validateJoi;
