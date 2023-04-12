@@ -26,10 +26,9 @@ const createMessage = (error, method) => {
                 return 'missing field favorite';
 
             default:
-                return 'Bad request';
+                return error.message || 'Bad request';
         }
     }
-
     if (isEmailInvalid) return 'email is invalid';
 
     if (isStringBaseError) {
@@ -38,6 +37,8 @@ const createMessage = (error, method) => {
         );
         return message;
     }
+
+    return error.message;
 };
 
 module.exports = createMessage;

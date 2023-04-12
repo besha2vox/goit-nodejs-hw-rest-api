@@ -2,12 +2,54 @@ const { HttpError, ctrlWrapper } = require('../helpers');
 const { Contact } = require('../schemas');
 
 const getAll = async (req, res, next) => {
+    const { favorite, page, limit } = req.query;
     const { _id } = req.user;
+    const all = await await Contact.find({ owner: _id });
 
-    const result = await Contact.find({ owner: _id });
-    console.log({ owner: _id }, result);
+    if (Boolean(favorite) && Boolean(page) && Boolean(limit)) {
+        const skip = (page - 1) * limit;
+        const filtered = await Contact.find({ owner: _id, favorite });
+        const result = await Contact.find(
+            { owner: _id, favorite },
+            {},
+            { skip, limit }
+        );
+        res.status(200).json({
+            result: {
+                contacts: result,
+                hints: result.length,
+                totalHints: filtered.length,
+            },
+        });
+        return;
+    }
+
+    if (!favorite && Boolean(page) && Boolean(limit)) {
+        const skip = (page - 1) * limit;
+        const result = await Contact.find({ owner: _id }, {}, { skip, limit });
+        res.status(200).json({
+            result: {
+                contacts: result,
+                hints: result.length,
+                totalHints: all.length,
+            },
+        });
+        return;
+    }
+
+    if (Boolean(favorite) && !page && !limit) {
+        const result = await Contact.find({ owner: _id, favorite });
+        res.status(200).json({
+            result: {
+                contacts: result,
+                totalHints: result.length,
+            },
+        });
+        return;
+    }
+
     res.status(200).json({
-        result: { contacts: result, totalHints: result.length },
+        result: { contacts: all, totalHints: all.length },
     });
 };
 

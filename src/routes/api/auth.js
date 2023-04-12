@@ -13,4 +13,11 @@ router.post('/logout', authMiddleware, authCtrl.logout);
 
 router.get('/current', authMiddleware, authCtrl.current);
 
+router.patch(
+    '/',
+    authMiddleware,
+    validateJoi(userSchema.subscription),
+    authCtrl.updateSubscription
+);
+
 module.exports = router;

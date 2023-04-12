@@ -4,6 +4,15 @@ const { handleMongooseError, hashingPassword } = require('../services');
 
 const Schema = mongoose.Schema;
 
+const TokenSchema = new mongoose.Schema({
+    userAgent: {
+        type: String,
+    },
+    token: {
+        type: String,
+    },
+});
+
 const user = new Schema(
     {
         password: {
@@ -20,7 +29,10 @@ const user = new Schema(
             enum: ['starter', 'pro', 'business'],
             default: 'starter',
         },
-        token: String,
+        tokens: {
+            type: [TokenSchema],
+            default: [],
+        },
     },
     { versionKey: false }
 );
@@ -53,10 +65,15 @@ const singin = Joi.object({
     }),
 }).unknown(false);
 
+const subscription = Joi.object({
+    subscription: Joi.string().required().valid('starter', 'pro', 'business'),
+});
+
 const User = mongoose.model('user', user);
 const userSchema = {
     singup,
     singin,
+    subscription,
 };
 
 module.exports = { User, userSchema };
