@@ -27,13 +27,8 @@ const authMiddleware = async (req, res, next) => {
 
         const { _id } = jwt.decode(token, process.env.JWT_SECRET);
         const user = await User.findById(_id);
-        const userAgent = req.headers['user-agent'];
 
-        const isExist = user.tokens.some(
-            (t) => t.token === token && t.userAgent === userAgent
-        );
-
-        if (!isExist) {
+        if (!user.token) {
             next(HttpError(401));
             return;
         }

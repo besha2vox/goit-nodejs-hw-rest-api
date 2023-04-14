@@ -4,15 +4,6 @@ const { handleMongooseError, hashingPassword } = require('../services');
 
 const Schema = mongoose.Schema;
 
-const TokenSchema = new mongoose.Schema({
-    userAgent: {
-        type: String,
-    },
-    token: {
-        type: String,
-    },
-});
-
 const user = new Schema(
     {
         password: {
@@ -29,10 +20,7 @@ const user = new Schema(
             enum: ['starter', 'pro', 'business'],
             default: 'starter',
         },
-        tokens: {
-            type: [TokenSchema],
-            default: [],
-        },
+        token: String,
     },
     { versionKey: false }
 );

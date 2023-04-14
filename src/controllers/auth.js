@@ -7,7 +7,7 @@ const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../schemas');
 
 const singup = async (req, res, next) => {
-    const { subscription, email, password } = req.body;
+    const { subscription, email, password } = req.data;
     const user = await User.findOne({ email });
 
     if (user) {
@@ -41,19 +41,11 @@ const singin = async (req, res, next) => {
         return;
     }
 
-    const { _id, tokens, subscription } = user;
-    const userAgent = req.headers['user-agent'];
-    const tokenIndx = tokens.findIndex(
-        (token) => token.userAgent === userAgent
-    );
+    const { _id, subscription } = user;
 
     const token = jwt.sign({ _id }, JWT_SECRET);
 
-    if (tokenIndx !== -1) {
-        user.tokens.splice(tokenIndx, 1, { userAgent, token });
-    } else {
-        user.tokens.push({ userAgent, token });
-    }
+    user.token = token;
 
     user.save();
 
@@ -62,27 +54,15 @@ const singin = async (req, res, next) => {
 
 const logout = async (req, res, next) => {
     const { _id } = req.user;
-
     const user = await User.findById(_id);
 
-    if (!user) {
+    if (!user || !user.token) {
         next(HttpError(401));
     }
 
-    const userAgent = req.headers['user-agent'];
-    const tokenIndx = user.tokens.findIndex(
-        (token) => token.userAgent === userAgent
-    );
+    await User.findOneAndUpdate({ _id }, { $unset: { token: '' } });
 
-    if (tokenIndx === -1) {
-        next(HttpError(401));
-        return;
-    } else {
-        user.tokens.splice(tokenIndx, 1);
-        user.save();
-    }
-
-    res.status(204);
+    res.status(204).json();
 };
 
 const current = async (req, res, next) => {
@@ -93,14 +73,9 @@ const current = async (req, res, next) => {
     if (!user) {
         next(HttpError(401));
     }
-    const { email, tokens, subscription } = user;
+    const { email, token, subscription } = user;
 
-    const userAgent = req.headers['user-agent'];
-    const tokenIndx = tokens.findIndex(
-        (token) => token.userAgent === userAgent
-    );
-
-    if (tokenIndx === -1) {
+    if (!token) {
         next(HttpError(401));
         return;
     }
