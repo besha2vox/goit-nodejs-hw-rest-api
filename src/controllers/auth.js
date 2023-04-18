@@ -22,7 +22,7 @@ const singup = async (req, res, next) => {
     });
     await newUser.save();
 
-    res.status(201).json({ email, subscription });
+    res.status(201).json({ user: { email, subscription } });
 };
 
 const singin = async (req, res, next) => {
