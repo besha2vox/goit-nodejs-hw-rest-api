@@ -1,5 +1,9 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const gravatar = require('gravatar');
+const path = require('path');
+const fs = require('fs').promises;
+const jimp = require('jimp');
 
 const { JWT_SECRET } = process.env;
 
@@ -15,14 +19,17 @@ const singup = async (req, res, next) => {
         return;
     }
 
+    const avatarURL = gravatar.url('email');
+
     const newUser = new User({
         email,
         password,
         subscription,
+        avatarURL,
     });
     await newUser.save();
 
-    res.status(201).json({ user: { email, subscription } });
+    res.status(201).json({ user: { email, subscription, avatarURL } });
 };
 
 const singin = async (req, res, next) => {
@@ -101,10 +108,33 @@ const updateSubscription = async (req, res, next) => {
     });
 };
 
+const changeAavatar = async (req, res, next) => {
+    const { _id } = req.user;
+    const { path: temporaryName, originalname } = req.file;
+    const storeDir = path.join(process.cwd(), 'public', 'avatars');
+    const fileName = `${Date.now()}_${originalname}`;
+    const avatarURL = path.join(storeDir, fileName);
+    const image = await jimp.read(temporaryName);
+    await image.resize(250, 250);
+    await image.writeAsync(temporaryName);
+
+    try {
+        await fs.rename(temporaryName, avatarURL);
+    } catch (err) {
+        await fs.unlink(temporaryName);
+        return next(err);
+    }
+
+    await User.findByIdAndUpdate(_id, { avatarURL });
+
+    res.status(200).json({ avatarURL });
+};
+
 module.exports = {
     singup: ctrlWrapper(singup),
     singin: ctrlWrapper(singin),
     logout: ctrlWrapper(logout),
     current: ctrlWrapper(current),
     updateSubscription: ctrlWrapper(updateSubscription),
+    changeAavatar: ctrlWrapper(changeAavatar),
 };
