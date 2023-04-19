@@ -4,7 +4,6 @@ const { HttpError } = require('../helpers');
 const validateJoi = (schema) => (req, res, next) => {
     const { methods } = req.route;
     const [method] = Object.keys(methods);
-
     const { error, value } = schema.validate(req.body, {
         stripUnknown: true,
         abortEarly: false,

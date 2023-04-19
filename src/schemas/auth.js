@@ -31,7 +31,7 @@ user.pre('save', async function () {
     await hashingPassword(this);
 });
 
-const singup = Joi.object({
+const signup = Joi.object({
     email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
         'string.email': 'Invalid email format',
@@ -44,7 +44,7 @@ const singup = Joi.object({
         .default('starter'),
 }).unknown(false);
 
-const singin = Joi.object({
+const signin = Joi.object({
     email: Joi.string().email().required().messages({
         'any.required': 'Email is required',
         'string.email': 'Invalid email format',
@@ -60,8 +60,8 @@ const subscription = Joi.object({
 
 const User = mongoose.model('user', user);
 const userSchema = {
-    singup,
-    singin,
+    signup,
+    signin,
     subscription,
 };
 

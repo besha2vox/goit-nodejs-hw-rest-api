@@ -5,9 +5,9 @@ const { userSchema } = require('../../schemas');
 
 const router = express.Router();
 
-router.post('/register', validateJoi(userSchema.singup), authCtrl.singup);
+router.post('/register', validateJoi(userSchema.signup), authCtrl.signup);
 
-router.post('/login', validateJoi(userSchema.singin), authCtrl.singin);
+router.post('/login', validateJoi(userSchema.signin), authCtrl.signin);
 
 router.post('/logout', authMiddleware, authCtrl.logout);
 

@@ -5,12 +5,13 @@ const path = require('path');
 const fs = require('fs').promises;
 const jimp = require('jimp');
 
+require('dotenv').config();
 const { JWT_SECRET } = process.env;
 
 const { HttpError, ctrlWrapper } = require('../helpers');
 const { User } = require('../schemas');
 
-const singup = async (req, res, next) => {
+const signup = async (req, res, next) => {
     const { subscription, email, password } = req.data;
     const user = await User.findOne({ email });
 
@@ -32,7 +33,7 @@ const singup = async (req, res, next) => {
     res.status(201).json({ user: { email, subscription, avatarURL } });
 };
 
-const singin = async (req, res, next) => {
+const signin = async (req, res, next) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
 
@@ -51,12 +52,11 @@ const singin = async (req, res, next) => {
     const { _id, subscription } = user;
 
     const token = jwt.sign({ _id }, JWT_SECRET);
-
     user.token = token;
 
     user.save();
 
-    res.status(201).json({ token, user: { email, subscription } });
+    res.status(200).json({ token, user: { email, subscription } });
 };
 
 const logout = async (req, res, next) => {
@@ -131,8 +131,8 @@ const changeAavatar = async (req, res, next) => {
 };
 
 module.exports = {
-    singup: ctrlWrapper(singup),
-    singin: ctrlWrapper(singin),
+    signup: ctrlWrapper(signup),
+    signin: ctrlWrapper(signin),
     logout: ctrlWrapper(logout),
     current: ctrlWrapper(current),
     updateSubscription: ctrlWrapper(updateSubscription),
