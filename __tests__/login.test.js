@@ -8,6 +8,7 @@ describe('Auth login test', () => {
         const _id = 'user-id';
         const email = 'test@example.com';
         const password = 'password';
+        const regex = /^[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/g;
         const user = {
             _id,
             email,
@@ -28,7 +29,7 @@ describe('Auth login test', () => {
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith({
-            token: expect.anything(),
+            token: expect.stringMatching(regex),
             user: {
                 email: expect.any(String),
                 subscription: expect.any(String),
