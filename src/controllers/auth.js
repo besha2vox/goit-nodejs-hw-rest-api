@@ -1,9 +1,12 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const gravatar = require('gravatar');
+const { uuid } = require('uuidv4');
 const path = require('path');
 const fs = require('fs').promises;
 const jimp = require('jimp');
+
+const { sendVerificationEmail } = require('../services');
 
 require('dotenv').config();
 const { JWT_SECRET } = process.env;
@@ -20,6 +23,10 @@ const signup = async (req, res, next) => {
         return;
     }
 
+    const verificationToken = uuid();
+
+    await sendVerificationEmail(email, verificationToken);
+
     const avatarURL = gravatar.url('email');
 
     const newUser = new User({
@@ -27,10 +34,29 @@ const signup = async (req, res, next) => {
         password,
         subscription,
         avatarURL,
+        verificationToken,
     });
+
     await newUser.save();
 
     res.status(201).json({ user: { email, subscription, avatarURL } });
+};
+
+const verifyEmail = async (req, res, next) => {
+    const { verificationToken } = req.params;
+    const user = await User.findOne({ verificationToken });
+
+    if (!user) {
+        next(HttpError(404));
+        return;
+    }
+
+    await User.findOneAndUpdate(
+        { verificationToken },
+        { verify: true, verificationToken: null }
+    );
+
+    res.status(200).json({ message: 'Verification successful' });
 };
 
 const signin = async (req, res, next) => {
@@ -132,6 +158,7 @@ const changeAavatar = async (req, res, next) => {
 
 module.exports = {
     signup: ctrlWrapper(signup),
+    verifyEmail: ctrlWrapper(verifyEmail),
     signin: ctrlWrapper(signin),
     logout: ctrlWrapper(logout),
     current: ctrlWrapper(current),
