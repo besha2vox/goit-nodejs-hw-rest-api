@@ -23,6 +23,11 @@ const sendVerificationEmail = async (email, verificationToken) => {
         to: email,
         subject: 'Email verification',
         text: mail,
+        envelope: {
+            from: process.env.EMAIL,
+            to: email,
+            messageId: `${Date.now()}@${process.env.EMAIL_DOMAIN}`,
+        },
     };
 
     const response = await transporter.sendMail(emailOptions);
