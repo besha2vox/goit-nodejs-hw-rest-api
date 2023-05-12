@@ -7,6 +7,14 @@ const router = express.Router();
 
 router.post('/register', validateJoi(userSchema.signup), authCtrl.signup);
 
+router.post(
+    '/verify',
+    validateJoi(userSchema.emailVerify),
+    authCtrl.resendVerifyEmail
+);
+
+router.get('/verify/:verificationToken', authCtrl.verifyEmail);
+
 router.post('/login', validateJoi(userSchema.signin), authCtrl.signin);
 
 router.post('/logout', authMiddleware, authCtrl.logout);

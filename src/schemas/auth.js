@@ -22,6 +22,14 @@ const user = new Schema(
         },
         token: String,
         avatarURL: String,
+        verify: {
+            type: Boolean,
+            default: false,
+        },
+        verificationToken: {
+            type: String,
+            required: [true, 'Verify token is required'],
+        },
     },
     { versionKey: false }
 );
@@ -58,11 +66,19 @@ const subscription = Joi.object({
     subscription: Joi.string().required().valid('starter', 'pro', 'business'),
 });
 
+const emailVerify = Joi.object({
+    email: Joi.string().email().required().messages({
+        'any.required': 'Email is required',
+        'string.email': 'Invalid email format',
+    }),
+});
+
 const User = mongoose.model('user', user);
 const userSchema = {
     signup,
     signin,
     subscription,
+    emailVerify,
 };
 
 module.exports = { User, userSchema };
